@@ -22,4 +22,4 @@ notebooks/*.ipynb
 # Large or non-shareable coursework assets
 *.zip
 Assessment Sheet*.pdf
-dataset/*.csv
+
