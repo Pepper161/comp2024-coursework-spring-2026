@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local outputs
+results/
+notebooks/*.ipynb
+
+# Large or non-shareable coursework assets
+*.zip
+Assessment Sheet*.pdf
+dataset/*.csv
