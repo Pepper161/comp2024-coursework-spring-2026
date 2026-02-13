@@ -44,6 +44,7 @@ def main() -> None:
     if not config_path.is_absolute():
         config_path = project_root / config_path
 
+    config_raw_text = config_path.read_text(encoding="utf-8")
     config = load_experiment_config(config_path)
     all_runs, summary = run_coursework_experiment(
         project_root=project_root,
@@ -51,6 +52,7 @@ def main() -> None:
         budget_override=args.budget_override,
         max_seeds=args.max_seeds,
         skip_plots=args.skip_plots,
+        config_raw_text=config_raw_text,
     )
     print(f"Finished. rows={len(all_runs)}")
     print("Saved:")
@@ -61,4 +63,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

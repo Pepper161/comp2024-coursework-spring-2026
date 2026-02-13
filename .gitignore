@@ -18,6 +18,7 @@ Thumbs.db
 # Local outputs
 results/
 notebooks/*.ipynb
+!notebooks/00_colab_run.ipynb
 
 # Large or non-shareable coursework assets
 *.zip

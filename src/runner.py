@@ -53,6 +53,28 @@ def _ensure_dirs(base_results_dir: Path) -> dict[str, Path]:
     return {"results": base_results_dir, "raw": raw_dir, "convergence": convergence_dir, "plots": plots_dir}
 
 
+def _save_run_repro_artifacts(
+    out_dirs: dict[str, Path],
+    config: dict[str, Any],
+    seeds: list[int],
+    config_raw_text: str | None = None,
+) -> None:
+    run_config_path = out_dirs["results"] / "run_config.yaml"
+    if config_raw_text is not None:
+        run_config_path.write_text(config_raw_text, encoding="utf-8")
+    else:
+        with run_config_path.open("w", encoding="utf-8") as fh:
+            yaml.safe_dump(config, fh, sort_keys=False)
+
+    seed_list_path = out_dirs["results"] / "seed_list.txt"
+    seed_list_path.write_text("\n".join(str(s) for s in seeds) + "\n", encoding="utf-8")
+
+
+def _append_row_csv(path: Path, row: dict[str, Any]) -> None:
+    df = pd.DataFrame([row])
+    df.to_csv(path, mode="a", index=False, header=not path.exists())
+
+
 def _optimizer_rng(seed: int, algorithm: str) -> np.random.Generator:
     offsets = {"ga": 11, "pso": 23, "sa": 37}
     return np.random.default_rng(seed * 10_000 + offsets[algorithm])
@@ -184,6 +206,7 @@ def run_coursework_experiment(
     budget_override: int | None = None,
     max_seeds: int | None = None,
     skip_plots: bool = False,
+    config_raw_text: str | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     data: DatasetBundle = load_unsw_nb15(project_root=project_root, config=config)
     feature_cols = data.feature_cols
@@ -200,6 +223,16 @@ def run_coursework_experiment(
         seeds = seeds[:max_seeds]
 
     out_dirs = _ensure_dirs(project_root / config["output"]["results_dir"])
+    _save_run_repro_artifacts(
+        out_dirs=out_dirs,
+        config=config,
+        seeds=seeds,
+        config_raw_text=config_raw_text,
+    )
+    incremental_path = out_dirs["raw"] / "all_runs_incremental.csv"
+    if incremental_path.exists():
+        incremental_path.unlink()
+
     search_space: SearchSpace = build_search_space(config["model"])
     k_min = int(config["selection"]["k_min"])
     val_size = float(config.get("protocol", {}).get("val_size", 0.2))
@@ -257,28 +290,28 @@ def run_coursework_experiment(
             group_to_indices=pre_full.group_to_indices,
             fitness_cfg=config["fitness"],
         )
-        all_rows.append(
-            {
-                "algorithm": "baseline_rf_default",
-                "seed": seed,
-                "budget_b": 0,
-                "evaluations_used": 0,
-                "val_best_score": np.nan,
-                "val_recall": np.nan,
-                "val_fpr": np.nan,
-                "test_score": baseline.score,
-                "test_accuracy": baseline.metrics["accuracy"],
-                "test_precision": baseline.metrics["precision"],
-                "test_recall": baseline.metrics["recall"],
-                "test_f1": baseline.metrics["f1"],
-                "test_fpr": baseline.metrics["fpr"],
-                "test_selected_features": baseline.metrics["selected_features"],
-                "test_runtime_sec": baseline.metrics["runtime_sec"],
-                "test_fit_time_sec": baseline.metrics["fit_time_sec"],
-                "test_predict_time_sec": baseline.metrics["predict_time_sec"],
-                "best_params_json": json.dumps(baseline.solution.params, sort_keys=True),
-            }
-        )
+        baseline_row = {
+            "algorithm": "baseline_rf_default",
+            "seed": seed,
+            "budget_b": 0,
+            "evaluations_used": 0,
+            "val_best_score": np.nan,
+            "val_recall": np.nan,
+            "val_fpr": np.nan,
+            "test_score": baseline.score,
+            "test_accuracy": baseline.metrics["accuracy"],
+            "test_precision": baseline.metrics["precision"],
+            "test_recall": baseline.metrics["recall"],
+            "test_f1": baseline.metrics["f1"],
+            "test_fpr": baseline.metrics["fpr"],
+            "test_selected_features": baseline.metrics["selected_features"],
+            "test_runtime_sec": baseline.metrics["runtime_sec"],
+            "test_fit_time_sec": baseline.metrics["fit_time_sec"],
+            "test_predict_time_sec": baseline.metrics["predict_time_sec"],
+            "best_params_json": json.dumps(baseline.solution.params, sort_keys=True),
+        }
+        all_rows.append(baseline_row)
+        _append_row_csv(incremental_path, baseline_row)
 
         for algorithm in ["ga", "pso", "sa"]:
             evaluator = ObjectiveEvaluator(
@@ -327,8 +360,7 @@ def run_coursework_experiment(
                 n_jobs=1,
             )
 
-            all_rows.append(
-                {
+            opt_row = {
                     "algorithm": algorithm,
                     "seed": seed,
                     "budget_b": budget_b,
@@ -351,7 +383,8 @@ def run_coursework_experiment(
                         sort_keys=True,
                     ),
                 }
-            )
+            all_rows.append(opt_row)
+            _append_row_csv(incremental_path, opt_row)
 
         seed_df = pd.DataFrame([r for r in all_rows if r["seed"] == seed])
         seed_df.to_csv(out_dirs["raw"] / f"seed_{seed}_results.csv", index=False)
@@ -368,4 +401,3 @@ def run_coursework_experiment(
         )
 
     return all_runs_df, summary_df
-
