@@ -31,7 +31,42 @@ Expected local files:
 4. Run:
 
 ```bash
-python run_experiment.py
+python run_experiment.py --config config/experiment.yaml
+```
+
+## Colab Start
+
+In Colab, shell commands use `!` prefix.  
+So these are equivalent in intent:
+
+- Local terminal: `python run_experiment.py --config config/experiment.yaml`
+- Colab cell: `!python run_experiment.py --config config/experiment.yaml`
+
+Recommended Colab flow:
+
+```python
+# Clone
+REPO_URL = "https://github.com/Pepper161/comp2024-coursework-spring-2026.git"
+!git clone "$REPO_URL"
+%cd comp2024-coursework-spring-2026
+
+# If Course_Work exists as subfolder, enter it
+import os
+if os.path.isdir("Course_Work"):
+    os.chdir("Course_Work")
+print("cwd:", os.getcwd())
+
+# Install deps
+!pip install -r requirements.txt
+
+# Place datasets in dataset/ (copy from Drive or upload)
+!ls -lh dataset
+
+# Smoke test
+!python run_experiment.py --config config/experiment.yaml --budget-override 30 --max-seeds 1 --skip-plots
+
+# Full run
+!python run_experiment.py --config config/experiment.yaml
 ```
 
 ## Notes
