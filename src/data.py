@@ -50,6 +50,7 @@ def load_unsw_nb15(project_root: Path, config: dict[str, Any]) -> DatasetBundle:
 
     drop_cols = set(dataset_cfg.get("drop_cols", []))
     drop_cols.add(target_col)
+    # Explicitly remove known leakage/non-feature columns before any preprocessing.
 
     feature_cols = [col for col in train_df.columns if col not in drop_cols]
     if not feature_cols:
@@ -68,4 +69,3 @@ def load_unsw_nb15(project_root: Path, config: dict[str, Any]) -> DatasetBundle:
         target_col=target_col,
         feature_cols=feature_cols,
     )
-

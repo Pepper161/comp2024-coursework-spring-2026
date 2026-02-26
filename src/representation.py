@@ -83,6 +83,7 @@ def _decode_choice(gene: float, choices: list[Any]) -> Any:
 
 def _enforce_k_min(mask_scores: np.ndarray, mask: np.ndarray, k_min: int) -> np.ndarray:
     enforced = mask.copy()
+    # Keep at least k_min original features so optimizers cannot exploit trivial empty masks.
     need = max(1, min(k_min, mask_scores.shape[0]))
     if int(enforced.sum()) >= need:
         return enforced
@@ -104,6 +105,7 @@ def decode_solution(
     mask = mask_scores >= 0.5
     mask = _enforce_k_min(mask_scores, mask, k_min)
 
+    # Parameter genes are shared across all optimizers, so decoding must stay deterministic.
     g = vec[n_features : n_features + PARAM_GENE_COUNT]
 
     depth_choices: list[int | None] = list(
@@ -151,6 +153,6 @@ def mask_to_encoded_indices(
     indices: list[int] = []
     for is_selected, feature in zip(mask.tolist(), original_features):
         if is_selected:
+            # Grouped selection: selecting one original categorical feature enables all its one-hot columns.
             indices.extend(group_to_indices[feature])
     return np.asarray(indices, dtype=np.int32)
-

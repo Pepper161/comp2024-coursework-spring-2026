@@ -46,6 +46,7 @@ def main() -> None:
 
     config_raw_text = config_path.read_text(encoding="utf-8")
     config = load_experiment_config(config_path)
+    # Pass raw config text through runner so saved run_config.yaml matches what user launched.
     all_runs, summary = run_coursework_experiment(
         project_root=project_root,
         config=config,

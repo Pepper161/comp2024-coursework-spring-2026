@@ -78,7 +78,7 @@ def run_pso(
             proposal = positions[i] + velocities[i]
             proposal = clamp_vector(proposal)
 
-            # Binary behavior for feature genes.
+            # Binary update for feature genes and continuous update for hyperparameter genes.
             mask_probs = _sigmoid(velocities[i, :n_feature_genes])
             proposal[:n_feature_genes] = (
                 rng.random(n_feature_genes) < mask_probs
@@ -114,4 +114,3 @@ def run_pso(
         "history": history,
         "evaluations": evaluations,
     }
-

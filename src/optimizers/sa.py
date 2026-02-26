@@ -85,6 +85,7 @@ def run_sa(
         if delta >= 0:
             accept = True
         else:
+            # Metropolis acceptance allows occasional worse moves to escape local minima.
             acceptance_prob = math.exp(delta / max(temperature, 1e-9))
             accept = rng.random() < acceptance_prob
 
@@ -116,4 +117,3 @@ def run_sa(
         "history": history,
         "evaluations": evaluations,
     }
-

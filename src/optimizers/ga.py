@@ -68,6 +68,7 @@ def run_ga(
     history: list[dict[str, Any]] = []
 
     evaluations = 0
+    # Evaluate initial population first so GA and other methods pay comparable startup cost.
     for i in range(pop_size):
         if evaluations >= budget_b:
             break
@@ -102,6 +103,7 @@ def run_ga(
         rec = evaluator.evaluate(child)
         evaluations += 1
 
+        # Steady-state replacement keeps budget accounting simple: one new evaluation per loop.
         worst_idx = int(np.argmin(scores))
         population[worst_idx] = child
         scores[worst_idx] = rec.score
@@ -129,4 +131,3 @@ def run_ga(
         "history": history,
         "evaluations": evaluations,
     }
-

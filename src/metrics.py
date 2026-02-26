@@ -24,6 +24,7 @@ def compute_binary_metrics(
     else:
         tn = fp = fn = tp = 0
 
+    # FPR is central to IDS trade-offs; keep explicit and robust for edge cases.
     denom = fp + tn
     fpr = float(fp / denom) if denom > 0 else 0.0
 
@@ -43,4 +44,3 @@ def compute_binary_metrics(
         "fn": int(fn),
         "tp": int(tp),
     }
-

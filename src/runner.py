@@ -59,6 +59,7 @@ def _save_run_repro_artifacts(
     seeds: list[int],
     config_raw_text: str | None = None,
 ) -> None:
+    # Persist exact run inputs so results can be reproduced without guessing runtime flags.
     run_config_path = out_dirs["results"] / "run_config.yaml"
     if config_raw_text is not None:
         run_config_path.write_text(config_raw_text, encoding="utf-8")
@@ -71,6 +72,7 @@ def _save_run_repro_artifacts(
 
 
 def _append_row_csv(path: Path, row: dict[str, Any]) -> None:
+    # Flush each completed result row to disk to survive Colab/runtime interruptions.
     df = pd.DataFrame([row])
     df.to_csv(path, mode="a", index=False, header=not path.exists())
 
@@ -172,6 +174,7 @@ def _run_single_optimizer(
     seed: int,
     optimizer_cfg: dict[str, Any],
 ) -> dict[str, Any]:
+    # All optimizers consume the same objective-evaluation budget for fair comparison.
     rng = _optimizer_rng(seed=seed, algorithm=algorithm)
     if algorithm == "ga":
         return run_ga(
@@ -247,6 +250,7 @@ def run_coursework_experiment(
     test_x_df, test_y = split_xy(data.test_df, feature_cols, data.target_col)
 
     for seed in seeds:
+        # Split only training CSV into inner train/validation for model selection (no test leakage).
         train_inner_idx, val_inner_idx = train_test_split(
             np.arange(len(data.train_df)),
             test_size=val_size,
@@ -314,6 +318,7 @@ def run_coursework_experiment(
         _append_row_csv(incremental_path, baseline_row)
 
         for algorithm in ["ga", "pso", "sa"]:
+            # New evaluator instance per (algorithm, seed) keeps cache isolation explicit.
             evaluator = ObjectiveEvaluator(
                 algorithm_name=algorithm,
                 seed=seed,

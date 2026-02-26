@@ -12,7 +12,7 @@ def build_baseline_solution(n_original_features: int) -> CandidateSolution:
     return CandidateSolution(
         mask=np.ones(n_original_features, dtype=bool),
         params={
-            # sklearn RandomForest defaults (except reproducibility knobs set elsewhere)
+            # Baseline must stay non-metaheuristic with default RF settings for fair benchmarking.
             "n_estimators": 100,
             "max_depth": None,
             "min_samples_split": 2,

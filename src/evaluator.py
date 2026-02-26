@@ -103,6 +103,7 @@ class ObjectiveEvaluator:
         )
         key = solution_key(solution)
         if key in self._cache:
+            # Cache hit still counts as an optimizer evaluation in caller logic; only model fitting is skipped.
             cached_score, cached_metrics, cached_solution = self._cache[key]
             return EvaluationRecord(
                 score=cached_score,
@@ -122,6 +123,7 @@ class ObjectiveEvaluator:
         if selected_indices.size == 0:
             raise RuntimeError("Decoded empty feature set. k_min enforcement failed.")
 
+        # Validation-only objective evaluation (test set is never touched here).
         model = _build_rf(solution.params, seed=self.seed, n_jobs=self.n_jobs)
         start = time.perf_counter()
         fit_start = time.perf_counter()
@@ -173,6 +175,7 @@ def evaluate_solution_on_test(
     n_jobs: int = 1,
 ) -> EvaluationRecord:
     """Final one-shot test evaluation performed after optimization."""
+    # This function is intentionally isolated from optimization to preserve test-set integrity.
     selected_indices = mask_to_encoded_indices(
         mask=solution.mask,
         original_features=original_features,
@@ -211,4 +214,3 @@ def evaluate_solution_on_test(
         lambda_feat=float(fitness_cfg["lambda_feat"]),
     )
     return EvaluationRecord(score=score, metrics=metrics, solution=solution, cache_hit=False)
-

@@ -47,6 +47,7 @@ def fit_preprocessor(
     onehot_handle_unknown: str = "ignore",
 ) -> FittedPreprocessor:
     """Fit preprocessing on train-only data and return encoded mapping."""
+    # Categorical membership is config-driven to keep feature grouping stable across runs.
     categorical = [c for c in categorical_cols if c in original_features]
     numeric = [c for c in original_features if c not in categorical]
 
@@ -70,6 +71,7 @@ def fit_preprocessor(
         remainder="drop",
         sparse_threshold=0.0,
     )
+    # Caller controls leakage boundary; this fit must only see training fold data.
     transformer.fit(train_features_df[original_features])
 
     group_to_indices: dict[str, list[int]] = {}
@@ -117,4 +119,3 @@ def split_xy(
     x_df = df[feature_cols].copy()
     y = df[target_col].astype(int).to_numpy()
     return x_df, y
-
