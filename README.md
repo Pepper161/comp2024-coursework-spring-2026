@@ -14,6 +14,26 @@ This project studies IDS feature selection and hyperparameter optimization using
 - `results/` - experiment outputs and figures
 - `run_experiment.py` - main entry point
 
+## File Guide
+
+- `run_experiment.py` - CLI entry point. Loads config and starts full experiment run.
+- `requirements.txt` - minimal Python dependency list used in local/Colab setups.
+- `config/experiment.yaml` - experiment settings (dataset paths, budget, seeds, model search space, output paths).
+- `notebooks/00_colab_run.ipynb` - Colab-first execution notebook (clone, dataset copy, smoke test, full run).
+- `notebooks/analysis_plots.ipynb` - post-run analysis notebook for quick result inspection.
+- `src/__init__.py` - package marker for `src` modules.
+- `src/data.py` - loads UNSW-NB15 train/test CSVs and resolves target/features safely.
+- `src/preprocess.py` - leakage-safe preprocessing (fit on training fold only) and one-hot group mapping.
+- `src/representation.py` - solution encoding/decoding (feature mask + RF hyperparameters), k-min enforcement.
+- `src/metrics.py` - binary classification metrics (Accuracy, Precision, Recall, F1, FPR, feature count, runtime).
+- `src/evaluator.py` - objective evaluation on validation, final one-shot test evaluation, per-(algorithm, seed) cache.
+- `src/baseline.py` - baseline RandomForest with default hyperparameters and all original features.
+- `src/runner.py` - orchestration for splits, optimizers, fairness budget handling, and result artifact writing.
+- `src/optimizers/__init__.py` - optimizer package marker.
+- `src/optimizers/ga.py` - Genetic Algorithm optimizer under fixed evaluation budget.
+- `src/optimizers/pso.py` - Binary/continuous PSO optimizer under fixed evaluation budget.
+- `src/optimizers/sa.py` - Simulated Annealing optimizer under fixed evaluation budget.
+
 ## Dataset
 
 This repository does not include raw dataset files.
