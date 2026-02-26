@@ -56,10 +56,14 @@ if os.path.isdir("Course_Work"):
     os.chdir("Course_Work")
 print("cwd:", os.getcwd())
 
-# Install deps
-!pip install -r requirements.txt
+# Mount Drive
+from google.colab import drive
+drive.mount('/content/drive')
 
-# Place datasets in dataset/ (copy from Drive or upload)
+# Place datasets in dataset/ (copy from Drive)
+!mkdir -p dataset
+!cp "/content/drive/MyDrive/<path>/UNSW_NB15_training-set.csv" dataset/
+!cp "/content/drive/MyDrive/<path>/UNSW_NB15_testing-set.csv" dataset/
 !ls -lh dataset
 
 # Smoke test
