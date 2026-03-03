@@ -20,6 +20,7 @@ This project studies IDS feature selection and hyperparameter optimization using
 - `requirements.txt` - minimal Python dependency list used in local/Colab setups.
 - `config/experiment.yaml` - experiment settings (dataset paths, budget, seeds, model search space, output paths).
 - `notebooks/00_colab_run.ipynb` - Colab-first execution notebook (clone, dataset copy, smoke test, full run).
+- `notebooks/01_colab_single_notebook.ipynb` - single-notebook Colab execution mirror for upload-and-run workflows.
 - `notebooks/analysis_plots.ipynb` - post-run analysis notebook for quick result inspection.
 - `src/__init__.py` - package marker for `src` modules.
 - `src/data.py` - loads UNSW-NB15 train/test CSVs and resolves target/features safely.
@@ -55,6 +56,11 @@ python run_experiment.py --config config/experiment.yaml
 ```
 
 ## Colab Start
+
+There are two supported Colab workflows:
+
+- `notebooks/00_colab_run.ipynb` - use this when you want to clone the repository and run the modular codebase.
+- `notebooks/01_colab_single_notebook.ipynb` - use this when you want a single uploaded notebook without cross-file imports or `git clone`.
 
 In Colab, shell commands use `!` prefix.  
 So these are equivalent in intent:
