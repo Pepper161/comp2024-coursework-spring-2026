@@ -19,8 +19,8 @@ Thumbs.db
 results/
 notebooks/*.ipynb
 !notebooks/00_colab_run.ipynb
+!notebooks/01_colab_single_notebook.ipynb
 
 # Large or non-shareable coursework assets
 *.zip
 Assessment Sheet*.pdf
-
