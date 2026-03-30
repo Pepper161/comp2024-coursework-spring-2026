@@ -25,8 +25,8 @@ This project studies IDS feature selection and hyperparameter optimization using
 - `config/experiment_robustness_b30.yaml` - lightweight multi-seed robustness profile (`B=30`, `seeds=[0,1,2]`) for GA/PSO/SA.
 - `notebooks/00_colab_run.ipynb` - Colab-first execution notebook (clone, dataset copy, smoke test, full run).
 - `notebooks/01_colab_single_notebook.ipynb` - single-notebook Colab execution mirror for upload-and-run workflows.
-- `notebooks/analysis_plots.ipynb` - post-run analysis notebook for quick result inspection.
 - `scripts/generate_report_tables.py` - converts raw CSV outputs into paper-ready CSV/Markdown summary tables.
+- `scripts/make_additional_plots.py` - generates the final revised report figures under `results/figures/`.
 - `src/__init__.py` - package marker for `src` modules.
 - `src/data.py` - loads UNSW-NB15 train/test CSVs and resolves target/features safely.
 - `src/preprocess.py` - leakage-safe preprocessing (fit on training fold only) and one-hot group mapping.
@@ -111,7 +111,7 @@ This profile keeps runtime practical while adding:
 After experiments complete, generate paper-ready tables from raw CSV outputs:
 
 ```bash
-python scripts/generate_report_tables.py --main results/ga/b50_seed0/raw/all_runs.csv results/pso/b50_seed0/raw/all_runs.csv results/sa/b50_seed0/raw/all_runs.csv --robustness results/robustness/b30_seeds012/raw/all_runs.csv --output-dir docs/generated
+python scripts/generate_report_tables.py --main results/ga/b50_seed0/raw/all_runs.csv results/pso/b50_seed0/raw/all_runs.csv results/sa/b50_seed0/raw/all_runs.csv --robustness results/robustness/b30_seeds012/raw/seed_0_results.csv results/robustness/b30_seed1/raw/all_runs.csv results/robustness/b30_seed2/raw/all_runs.csv --output-dir docs/generated
 ```
 
 This creates:
@@ -120,6 +120,25 @@ This creates:
 - `docs/generated/summary_robustness.csv`
 - `docs/generated/paper_table_main.md`
 - `docs/generated/paper_table_robustness.md`
+
+## Final Report Figures
+
+Generate the final revised report figures with:
+
+```bash
+python scripts/make_additional_plots.py
+```
+
+This creates:
+
+- `results/figures/tradeoff_scatter_revised.png`
+- `results/figures/distribution_test_f1_revised.png`
+- `results/figures/distribution_test_fpr_revised.png`
+- `results/figures/distribution_selected_features_revised.png`
+- `results/figures/distribution_runtime_revised.png`
+- `results/figures/feature_selection_frequency_revised.png`
+- `results/figures/convergence_summary_across_seeds_revised.png`
+- `results/figures/revision_notes.md`
 
 ## Colab Start
 

@@ -43,6 +43,7 @@ Treat a run as promising if any of the following is true:
 
 1. `ga_b20_base` - current GA settings, lower budget
 2. `ga_b20_mut002` - mutation rate only, `0.05 -> 0.02`
-3. `ga_b20_mut010` - mutation rate only, `0.05 -> 0.10`
+3. `ga_b20_pop10` - population size only, `25 -> 10`
+4. `ga_b20_pop15` - population size only, `25 -> 15`
 
 If none of these runs is promising enough, stop and keep the existing `ga_b50_s0` result as the main GA result.
