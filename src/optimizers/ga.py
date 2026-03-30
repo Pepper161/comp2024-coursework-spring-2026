@@ -85,6 +85,12 @@ def run_ga(
                 "evaluation": evaluations,
                 "score": rec.score,
                 "best_score": best_score,
+                "recall": rec.metrics["recall"],
+                "fpr": rec.metrics["fpr"],
+                "selected_features": rec.metrics["selected_features"],
+                "best_recall": best_metrics["recall"],
+                "best_fpr": best_metrics["fpr"],
+                "best_selected_features": best_metrics["selected_features"],
                 "cache_hit": int(rec.cache_hit),
             }
         )
@@ -119,6 +125,12 @@ def run_ga(
                 "evaluation": evaluations,
                 "score": rec.score,
                 "best_score": best_score,
+                "recall": rec.metrics["recall"],
+                "fpr": rec.metrics["fpr"],
+                "selected_features": rec.metrics["selected_features"],
+                "best_recall": best_metrics["recall"],
+                "best_fpr": best_metrics["fpr"],
+                "best_selected_features": best_metrics["selected_features"],
                 "cache_hit": int(rec.cache_hit),
             }
         )

@@ -19,9 +19,14 @@ This project studies IDS feature selection and hyperparameter optimization using
 - `run_experiment.py` - CLI entry point. Loads config and starts full experiment run.
 - `requirements.txt` - minimal Python dependency list used in local/Colab setups.
 - `config/experiment.yaml` - experiment settings (dataset paths, budget, seeds, model search space, output paths).
+- `config/experiment_local_ga.yaml` - lightweight local profile that runs only GA with `seed=0`.
+- `config/experiment_local_pso.yaml` - lightweight local profile that runs only PSO with `seed=0`.
+- `config/experiment_local_sa.yaml` - lightweight local profile that runs only SA with `seed=0`.
+- `config/experiment_robustness_b30.yaml` - lightweight multi-seed robustness profile (`B=30`, `seeds=[0,1,2]`) for GA/PSO/SA.
 - `notebooks/00_colab_run.ipynb` - Colab-first execution notebook (clone, dataset copy, smoke test, full run).
 - `notebooks/01_colab_single_notebook.ipynb` - single-notebook Colab execution mirror for upload-and-run workflows.
 - `notebooks/analysis_plots.ipynb` - post-run analysis notebook for quick result inspection.
+- `scripts/generate_report_tables.py` - converts raw CSV outputs into paper-ready CSV/Markdown summary tables.
 - `src/__init__.py` - package marker for `src` modules.
 - `src/data.py` - loads UNSW-NB15 train/test CSVs and resolves target/features safely.
 - `src/preprocess.py` - leakage-safe preprocessing (fit on training fold only) and one-hot group mapping.
@@ -54,6 +59,67 @@ Expected local files:
 ```bash
 python run_experiment.py --config config/experiment.yaml
 ```
+
+## Local Single-Optimizer Runs
+
+For a more stable local workflow, run one optimizer at a time with the lightweight configs:
+
+```bash
+python run_experiment.py --config config/experiment_local_ga.yaml
+python run_experiment.py --config config/experiment_local_pso.yaml
+python run_experiment.py --config config/experiment_local_sa.yaml
+```
+
+These profiles use:
+
+- `seed=0`
+- `evaluations_B=50`
+- reduced RF search ranges
+- nested output folders under `results/` so each optimizer run is preserved independently
+
+Current local output layout:
+
+- `results/ga/b50_seed0`
+- `results/pso/b50_seed0`
+- `results/sa/b50_seed0`
+
+Each run folder contains:
+
+- `run_config.yaml` - exact config used for that run
+- `seed_list.txt` - seed list used for that run
+- `notes.txt` - editable run log template for recording purpose, changes, runtime issues, and conclusions
+- `raw/`, `convergence/`, `plots/` - generated experiment artifacts
+- `best_solutions/` - saved feature selections and best hyperparameters per algorithm/seed
+
+## Robustness Check
+
+Use the lightweight robustness profile only as supporting evidence, not as a replacement for the main `B=50, seed=0` result:
+
+```bash
+python run_experiment.py --config config/experiment_robustness_b30.yaml
+```
+
+This profile keeps runtime practical while adding:
+
+- repeated seeds: `0,1,2`
+- `optimization_wall_time_sec`
+- `total_run_wall_time_sec`
+- richer convergence logs with best validation recall/FPR/feature count
+
+## Paper Table Generation
+
+After experiments complete, generate paper-ready tables from raw CSV outputs:
+
+```bash
+python scripts/generate_report_tables.py --main results/ga/b50_seed0/raw/all_runs.csv results/pso/b50_seed0/raw/all_runs.csv results/sa/b50_seed0/raw/all_runs.csv --robustness results/robustness/b30_seeds012/raw/all_runs.csv --output-dir docs/generated
+```
+
+This creates:
+
+- `docs/generated/summary_main.csv`
+- `docs/generated/summary_robustness.csv`
+- `docs/generated/paper_table_main.md`
+- `docs/generated/paper_table_robustness.md`
 
 ## Colab Start
 
