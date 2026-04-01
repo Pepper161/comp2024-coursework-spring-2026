@@ -62,6 +62,12 @@ def run_sa(
             "evaluation": evaluations,
             "score": current_score,
             "best_score": best_score,
+            "recall": rec_current.metrics["recall"],
+            "fpr": rec_current.metrics["fpr"],
+            "selected_features": rec_current.metrics["selected_features"],
+            "best_recall": best_metrics["recall"],
+            "best_fpr": best_metrics["fpr"],
+            "best_selected_features": best_metrics["selected_features"],
             "cache_hit": int(rec_current.cache_hit),
         }
     ]
@@ -105,6 +111,12 @@ def run_sa(
                 "evaluation": evaluations,
                 "score": rec_proposal.score,
                 "best_score": best_score,
+                "recall": rec_proposal.metrics["recall"],
+                "fpr": rec_proposal.metrics["fpr"],
+                "selected_features": rec_proposal.metrics["selected_features"],
+                "best_recall": best_metrics["recall"],
+                "best_fpr": best_metrics["fpr"],
+                "best_selected_features": best_metrics["selected_features"],
                 "cache_hit": int(rec_proposal.cache_hit),
             }
         )

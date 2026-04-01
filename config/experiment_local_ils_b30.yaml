@@ -28,11 +28,11 @@ fitness:
   metric_primary: "recall"
 
 budget:
-  evaluations_B: 200
-  seeds: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+  evaluations_B: 30
+  seeds: [0]
 
 run:
-  enabled_algorithms: ["ga", "pso", "sa"]
+  enabled_algorithms: ["ils"]
 
 model:
   name: "random_forest"
@@ -40,53 +40,20 @@ model:
     n_jobs: 1
     random_state_from_seed: true
   search_space:
-    n_estimators: [100, 600]
-    max_depth: [6, 30, null]     # null = None
+    n_estimators: [100, 300]
+    max_depth: [6, 20]
     min_samples_split: [2, 20]
     min_samples_leaf: [1, 8]
     max_features: ["sqrt", "log2"]
     class_weight: [null, "balanced"]
 
 optimizers:
-  ga:
-    pop_size: 50
-    generations: 40
-    tournament_k: 3
-    crossover_rate: 0.9
-    mutation_rate: 0.05
-
-  pso:
-    swarm_size: 50
-    iterations: 40
-    w: 0.7
-    c1: 1.5
-    c2: 1.5
-
-  sa:
-    iterations: 200
-    T0: 1.0
-    alpha: 0.995
-    neighbor:
-      bit_flips: [1, 3]
-      param_step_prob: 0.5
-
-  tabu:
-    tabu_tenure: 7
-    neighborhood_size: 4
-    feature_flips: [1, 3]
-    param_step_scale: 0.12
-
   ils:
-    local_trials: 3
+    local_trials: 2
     perturb_feature_flips: 3
-    param_step_scale: 0.12
-
-  vns:
-    neighborhood_sizes: [1, 2, 3]
-    local_trials_per_k: 1
-    param_step_scale: 0.08
+    param_step_scale: 0.10
 
 output:
-  results_dir: "results/full_comparison"
+  results_dir: "results/ils/b30_seed0"
   save_raw_per_seed: true
   save_plots: true

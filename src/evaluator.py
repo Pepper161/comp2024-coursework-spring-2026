@@ -126,33 +126,60 @@ class ObjectiveEvaluator:
         # Validation-only objective evaluation (test set is never touched here).
         model = _build_rf(solution.params, seed=self.seed, n_jobs=self.n_jobs)
         start = time.perf_counter()
-        fit_start = time.perf_counter()
-        model.fit(self.x_train_inner[:, selected_indices], self.y_train_inner)
-        fit_time = time.perf_counter() - fit_start
+        try:
+            fit_start = time.perf_counter()
+            model.fit(self.x_train_inner[:, selected_indices], self.y_train_inner)
+            fit_time = time.perf_counter() - fit_start
 
-        pred_start = time.perf_counter()
-        y_pred = model.predict(self.x_val_inner[:, selected_indices])
-        pred_time = time.perf_counter() - pred_start
-        runtime = time.perf_counter() - start
+            pred_start = time.perf_counter()
+            y_pred = model.predict(self.x_val_inner[:, selected_indices])
+            pred_time = time.perf_counter() - pred_start
+            runtime = time.perf_counter() - start
 
-        metrics = compute_binary_metrics(
-            y_true=self.y_val_inner,
-            y_pred=y_pred,
-            selected_features=solution.k,
-            total_features=self.total_features,
-            runtime_sec=runtime,
-            fit_time_sec=fit_time,
-            predict_time_sec=pred_time,
-        )
-        score = compute_fitness(
-            recall=metrics["recall"],
-            fpr=metrics["fpr"],
-            k=solution.k,
-            d=self.total_features,
-            alpha=self.alpha,
-            lambda_fpr=self.lambda_fpr,
-            lambda_feat=self.lambda_feat,
-        )
+            metrics = compute_binary_metrics(
+                y_true=self.y_val_inner,
+                y_pred=y_pred,
+                selected_features=solution.k,
+                total_features=self.total_features,
+                runtime_sec=runtime,
+                fit_time_sec=fit_time,
+                predict_time_sec=pred_time,
+            )
+            score = compute_fitness(
+                recall=metrics["recall"],
+                fpr=metrics["fpr"],
+                k=solution.k,
+                d=self.total_features,
+                alpha=self.alpha,
+                lambda_fpr=self.lambda_fpr,
+                lambda_feat=self.lambda_feat,
+            )
+        except Exception as exc:
+            if exc.__class__.__name__ not in {"MemoryError", "_ArrayMemoryError", "ArrayMemoryError"}:
+                raise
+            runtime = time.perf_counter() - start
+            # Fail-soft on pathological candidates so long runs can complete under limited memory.
+            metrics = {
+                "accuracy": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "fpr": 1.0,
+                "selected_features": solution.k,
+                "total_features": self.total_features,
+                "runtime_sec": runtime,
+                "fit_time_sec": runtime,
+                "predict_time_sec": 0.0,
+            }
+            score = compute_fitness(
+                recall=0.0,
+                fpr=1.0,
+                k=solution.k,
+                d=self.total_features,
+                alpha=self.alpha,
+                lambda_fpr=self.lambda_fpr,
+                lambda_feat=self.lambda_feat,
+            )
 
         self._cache[key] = (
             score,
