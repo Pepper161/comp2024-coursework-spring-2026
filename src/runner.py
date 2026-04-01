@@ -4,6 +4,10 @@ from __future__ import annotations
 
 import json
 import time
+import gc
+import subprocess
+import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -15,12 +19,15 @@ from sklearn.model_selection import train_test_split
 
 from .baseline import run_baseline_test
 from .data import DatasetBundle, load_unsw_nb15
-from .evaluator import ObjectiveEvaluator, evaluate_solution_on_test
+from .evaluator import EvaluationRecord, ObjectiveEvaluator, evaluate_solution_on_test
 from .optimizers.ga import run_ga
+from .optimizers.ils import run_ils
 from .optimizers.pso import run_pso
 from .optimizers.sa import run_sa
+from .optimizers.tabu import run_tabu
+from .optimizers.vns import run_vns
 from .preprocess import fit_preprocessor, split_xy
-from .representation import SearchSpace, build_search_space
+from .representation import CandidateSolution, SearchSpace, build_search_space
 
 
 def load_experiment_config(config_path: Path) -> dict[str, Any]:
@@ -124,8 +131,13 @@ def _append_row_csv(path: Path, row: dict[str, Any]) -> None:
     df.to_csv(path, mode="a", index=False, header=not path.exists())
 
 
+def _write_run_status(results_dir: Path, payload: dict[str, Any]) -> None:
+    status_path = results_dir / "run_status.json"
+    status_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+
+
 def _optimizer_rng(seed: int, algorithm: str) -> np.random.Generator:
-    offsets = {"ga": 11, "pso": 23, "sa": 37}
+    offsets = {"ga": 11, "pso": 23, "sa": 37, "tabu": 41, "ils": 53, "vns": 67}
     return np.random.default_rng(seed * 10_000 + offsets[algorithm])
 
 
@@ -212,8 +224,10 @@ def _save_best_solution_artifact(
     solution,
     original_features: list[str],
     validation_metrics: dict[str, Any] | None,
-    test_metrics: dict[str, Any],
+    test_metrics: dict[str, Any] | None,
     optimization_wall_time_sec: float,
+    stage: str,
+    validation_best_score: float | None = None,
 ) -> None:
     selected_feature_names = [
         feature for feature, keep in zip(original_features, solution.mask.tolist()) if keep
@@ -231,6 +245,8 @@ def _save_best_solution_artifact(
         "validation_metrics": validation_metrics,
         "test_metrics": test_metrics,
         "optimization_wall_time_sec": float(optimization_wall_time_sec),
+        "validation_best_score": validation_best_score,
+        "stage": stage,
     }
     out_path = out_dir / f"{algorithm}_seed_{seed}.json"
     out_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -246,6 +262,65 @@ def _create_plots(all_runs: pd.DataFrame, convergence_dir: Path, plots_dir: Path
         plots_dir / "box_selected_features.png",
     )
     _plot_convergence(convergence_dir, plots_dir / "convergence_mean_best_score.png")
+
+
+def _evaluate_solution_on_test_fresh_process(
+    project_root: Path,
+    config_path: Path,
+    config: dict[str, Any],
+    seed: int,
+    solution: CandidateSolution,
+) -> EvaluationRecord:
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        solution_path = tmp_path / "solution.json"
+        output_path = tmp_path / "result.json"
+        solution_path.write_text(
+            json.dumps(
+                {
+                    "mask": solution.mask.tolist(),
+                    "params": dict(solution.params),
+                }
+            ),
+            encoding="utf-8",
+        )
+        worker_path = project_root / "scripts" / "final_test_worker.py"
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(worker_path),
+                "--project-root",
+                str(project_root),
+                "--config",
+                str(config_path),
+                "--seed",
+                str(seed),
+                "--solution-json",
+                str(solution_path),
+                "--output-json",
+                str(output_path),
+            ],
+            cwd=str(project_root),
+            capture_output=True,
+            text=True,
+        )
+        if completed.returncode != 0:
+            raise RuntimeError(
+                "Final test subprocess failed.\n"
+                f"stdout:\n{completed.stdout}\n"
+                f"stderr:\n{completed.stderr}"
+            )
+        payload = json.loads(output_path.read_text(encoding="utf-8"))
+    rebuilt_solution = CandidateSolution(
+        mask=np.asarray(payload["solution"]["mask"], dtype=bool),
+        params=dict(payload["solution"]["params"]),
+    )
+    return EvaluationRecord(
+        score=float(payload["score"]),
+        metrics=dict(payload["metrics"]),
+        solution=rebuilt_solution,
+        cache_hit=False,
+    )
 
 
 def _run_single_optimizer(
@@ -282,12 +357,37 @@ def _run_single_optimizer(
             rng=rng,
             sa_cfg=optimizer_cfg,
         )
+    if algorithm == "tabu":
+        return run_tabu(
+            evaluator=evaluator,
+            budget_b=budget_b,
+            n_feature_genes=n_feature_genes,
+            rng=rng,
+            tabu_cfg=optimizer_cfg,
+        )
+    if algorithm == "ils":
+        return run_ils(
+            evaluator=evaluator,
+            budget_b=budget_b,
+            n_feature_genes=n_feature_genes,
+            rng=rng,
+            ils_cfg=optimizer_cfg,
+        )
+    if algorithm == "vns":
+        return run_vns(
+            evaluator=evaluator,
+            budget_b=budget_b,
+            n_feature_genes=n_feature_genes,
+            rng=rng,
+            vns_cfg=optimizer_cfg,
+        )
     raise ValueError(f"Unknown algorithm: {algorithm}")
 
 
 def run_coursework_experiment(
     project_root: Path,
     config: dict[str, Any],
+    config_path: Path | None = None,
     budget_override: int | None = None,
     max_seeds: int | None = None,
     skip_plots: bool = False,
@@ -416,6 +516,16 @@ def run_coursework_experiment(
             validation_metrics=None,
             test_metrics=baseline.metrics,
             optimization_wall_time_sec=0.0,
+            stage="final_test_completed",
+        )
+        _write_run_status(
+            out_dirs["results"],
+            {
+                "seed": seed,
+                "algorithm": "baseline_rf_default",
+                "stage": "baseline_completed",
+                "results_dir": str(out_dirs["results"]),
+            },
         )
 
         # Allow local runs to execute a single optimizer at a time while keeping the
@@ -457,18 +567,70 @@ def run_coursework_experiment(
                 seed=seed,
             )
 
-            final_test = evaluate_solution_on_test(
-                solution=opt_result["best_solution"],
-                x_train_full=x_train_full,
-                y_train_full=full_y,
-                x_test=x_test,
-                y_test=test_y,
-                original_features=feature_cols,
-                group_to_indices=pre_full.group_to_indices,
-                fitness_cfg=config["fitness"],
+            # Save checkpoint before final test so the best solution survives final-evaluation failures.
+            _save_best_solution_artifact(
+                out_dir=out_dirs["best_solutions"],
+                algorithm=algorithm,
                 seed=seed,
-                n_jobs=1,
+                solution=opt_result["best_solution"],
+                original_features=feature_cols,
+                validation_metrics=opt_result["best_metrics"],
+                test_metrics=None,
+                optimization_wall_time_sec=optimization_wall_time_sec,
+                stage="optimization_completed",
+                validation_best_score=float(opt_result["best_score"]),
             )
+            _write_run_status(
+                out_dirs["results"],
+                {
+                    "seed": seed,
+                    "algorithm": algorithm,
+                    "stage": "optimization_completed",
+                    "evaluations_used": int(opt_result["evaluations"]),
+                    "validation_best_score": float(opt_result["best_score"]),
+                    "optimization_wall_time_sec": float(optimization_wall_time_sec),
+                    "checkpoint": str(out_dirs["best_solutions"] / f"{algorithm}_seed_{seed}.json"),
+                },
+            )
+
+            # Free validation-only state before the final full-train / test evaluation.
+            del evaluator
+            gc.collect()
+            try:
+                _write_run_status(
+                    out_dirs["results"],
+                    {
+                        "seed": seed,
+                        "algorithm": algorithm,
+                        "stage": "final_test_started",
+                        "evaluations_used": int(opt_result["evaluations"]),
+                        "validation_best_score": float(opt_result["best_score"]),
+                        "optimization_wall_time_sec": float(optimization_wall_time_sec),
+                        "checkpoint": str(out_dirs["best_solutions"] / f"{algorithm}_seed_{seed}.json"),
+                    },
+                )
+                final_test = _evaluate_solution_on_test_fresh_process(
+                    project_root=project_root,
+                    config_path=config_path or (project_root / "config" / "experiment.yaml"),
+                    config=config,
+                    seed=seed,
+                    solution=opt_result["best_solution"],
+                )
+            except Exception as exc:
+                _write_run_status(
+                    out_dirs["results"],
+                    {
+                        "seed": seed,
+                        "algorithm": algorithm,
+                        "stage": "final_test_failed",
+                        "evaluations_used": int(opt_result["evaluations"]),
+                        "validation_best_score": float(opt_result["best_score"]),
+                        "optimization_wall_time_sec": float(optimization_wall_time_sec),
+                        "checkpoint": str(out_dirs["best_solutions"] / f"{algorithm}_seed_{seed}.json"),
+                        "error": str(exc),
+                    },
+                )
+                raise
 
             opt_row = {
                     "algorithm": algorithm,
@@ -506,6 +668,21 @@ def run_coursework_experiment(
                 validation_metrics=opt_result["best_metrics"],
                 test_metrics=final_test.metrics,
                 optimization_wall_time_sec=optimization_wall_time_sec,
+                stage="final_test_completed",
+                validation_best_score=float(opt_result["best_score"]),
+            )
+            _write_run_status(
+                out_dirs["results"],
+                {
+                    "seed": seed,
+                    "algorithm": algorithm,
+                    "stage": "final_test_completed",
+                    "evaluations_used": int(opt_result["evaluations"]),
+                    "validation_best_score": float(opt_result["best_score"]),
+                    "optimization_wall_time_sec": float(optimization_wall_time_sec),
+                    "test_runtime_sec": float(final_test.metrics["runtime_sec"]),
+                    "checkpoint": str(out_dirs["best_solutions"] / f"{algorithm}_seed_{seed}.json"),
+                },
             )
 
         seed_df = pd.DataFrame([r for r in all_rows if r["seed"] == seed])

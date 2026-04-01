@@ -50,6 +50,7 @@ def main() -> None:
     all_runs, summary = run_coursework_experiment(
         project_root=project_root,
         config=config,
+        config_path=config_path,
         budget_override=args.budget_override,
         max_seeds=args.max_seeds,
         skip_plots=args.skip_plots,
