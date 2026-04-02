@@ -1,0 +1,10 @@
+{
+  "algorithm": "tabu",
+  "checkpoint": "D:\\UniversityNottingham\\Year 2 CS\\Sem 2\\AI Methods\\CW\\comp2024-coursework-spring-2026\\results\\tabu\\b120_seed0\\best_solutions\\tabu_seed_0.json",
+  "evaluations_used": 120,
+  "optimization_wall_time_sec": 3919.9955594001804,
+  "seed": 0,
+  "stage": "final_test_completed",
+  "test_runtime_sec": 41.71252020006068,
+  "validation_best_score": 0.862391545918296
+}
