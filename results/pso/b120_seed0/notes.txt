@@ -1,0 +1,25 @@
+Run Notes
+=========
+
+results_dir: results/pso/b120_seed0
+enabled_algorithms: pso
+evaluations_B: 120
+seeds: 0
+
+Purpose:
+- 
+
+Reason for this configuration:
+- 
+
+What changed from the previous run:
+- 
+
+Observed runtime / memory notes:
+- 
+
+Result summary:
+- 
+
+Decision for next run:
+- 

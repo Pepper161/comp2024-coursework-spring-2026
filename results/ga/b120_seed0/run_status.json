@@ -1,0 +1,12 @@
+{
+    "algorithm":  "ga",
+    "seed":  0,
+    "stage":  "final_test_completed",
+    "evaluations_used":  120,
+    "validation_best_score":  0.87032333231587489,
+    "optimization_wall_time_sec":  5417.3962883000495,
+    "test_runtime_sec":  72.384704099968076,
+    "checkpoint":  "C:\\Users\\kazHP\\OneDrive - University of Nottingham Malaysia\\Year2\\Winter\\Artificial_Intelligence_Methods\\Course_Work\\results\\ga\\b120_seed0\\best_solutions\\ga_seed_0.json",
+    "all_runs_csv":  "C:\\Users\\kazHP\\OneDrive - University of Nottingham Malaysia\\Year2\\Winter\\Artificial_Intelligence_Methods\\Course_Work\\results\\ga\\b120_seed0\\raw\\all_runs.csv",
+    "summary_csv":  "C:\\Users\\kazHP\\OneDrive - University of Nottingham Malaysia\\Year2\\Winter\\Artificial_Intelligence_Methods\\Course_Work\\results\\ga\\b120_seed0\\summary.csv"
+}

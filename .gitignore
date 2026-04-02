@@ -17,6 +17,24 @@ Thumbs.db
 
 # Local outputs
 results/
+!results/
+results/*
+!results/ga/
+results/ga/*
+!results/ga/b120_seed0/
+!results/ga/b120_seed0/**
+!results/pso/
+results/pso/*
+!results/pso/b120_seed0/
+!results/pso/b120_seed0/**
+!results/sa/
+results/sa/*
+!results/sa/b120_seed0/
+!results/sa/b120_seed0/**
+!results/vns/
+results/vns/*
+!results/vns/b120_seed0/
+!results/vns/b120_seed0/**
 notebooks/*.ipynb
 !notebooks/00_colab_run.ipynb
 !notebooks/01_colab_single_notebook.ipynb

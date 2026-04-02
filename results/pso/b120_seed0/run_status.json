@@ -1,0 +1,10 @@
+{
+  "algorithm": "pso",
+  "checkpoint": "C:\\Users\\kazHP\\OneDrive - University of Nottingham Malaysia\\Year2\\Winter\\Artificial_Intelligence_Methods\\Course_Work\\results\\pso\\b120_seed0\\best_solutions\\pso_seed_0.json",
+  "evaluations_used": 120,
+  "optimization_wall_time_sec": 3770.8910746,
+  "seed": 0,
+  "stage": "final_test_completed",
+  "test_runtime_sec": 26.330337899998995,
+  "validation_best_score": 0.8703233323158749
+}
