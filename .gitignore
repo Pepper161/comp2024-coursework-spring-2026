@@ -31,6 +31,14 @@ results/pso/*
 results/sa/*
 !results/sa/b120_seed0/
 !results/sa/b120_seed0/**
+!results/tabu/
+results/tabu/*
+!results/tabu/b120_seed0/
+!results/tabu/b120_seed0/**
+!results/ils/
+results/ils/*
+!results/ils/b120_seed0/
+!results/ils/b120_seed0/**
 !results/vns/
 results/vns/*
 !results/vns/b120_seed0/
