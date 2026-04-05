@@ -1,0 +1,106 @@
+<mxfile host="app.diagrams.net" modified="2026-04-05T12:00:00.000Z" agent="Codex" version="24.7.17">
+  <diagram id="pipeline-overview" name="Pipeline Overview">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="UNSW-NB15 Experimental Pipeline" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=22;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="520" y="20" width="560" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dataset" value="UNSW-NB15&#xa;training set + testing set" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="650" y="80" width="300" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="train" value="Training split" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="470" y="190" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="test" value="Testing split&#xa;(held out)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="910" y="190" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="trainval" value="Train / validation split&#xa;inside training data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="470" y="290" width="220" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="fitprep" value="Fit preprocessing on train only&#xa;- median / most-frequent imputation&#xa;- one-hot encode proto / service / state" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="420" y="400" width="320" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="transform" value="Transform validation and test only&#xa;(no refit, leakage-safe)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="830" y="400" width="280" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="grouped" value="Grouped original-feature representation&#xa;(not independent one-hot fragments)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="430" y="540" width="300" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="baseline" value="Baseline branch&#xa;All grouped features + default RF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=15;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="180" y="670" width="260" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="meta" value="Metaheuristic branch&#xa;Grouped feature subset + RF hyperparameters" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="670" width="330" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="optim" value="Validation-based optimisation&#xa;GA / PSO / SA / Tabu / VNS&#xa;same evaluator + same budget accounting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="500" y="790" width="330" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="bestmodel" value="Best candidate model&#xa;(selected features + tuned RF setting)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="880" y="790" width="250" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="finaleval" value="Final one-shot test evaluation&#xa;reported metrics: Accuracy / Precision / Recall / F1 / FPR / Features / Runtime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="650" width="330" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="fairness" value="Fairness policy&#xa;- same split&#xa;- same preprocessing&#xa;- same representation&#xa;- same evaluator&#xa;- same budget framework" style="shape=note;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="360" width="250" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="dataset" target="train">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="dataset" target="test">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="train" target="trainval">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="trainval" target="fitprep">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="fitted transformer" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="fitprep" target="transform">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="fitprep" target="grouped">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="grouped" target="baseline">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="grouped" target="meta">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="meta" target="optim">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="best validation candidate" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="optim" target="bestmodel">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="all features" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="baseline" target="finaleval">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" value="selected features + tuned RF" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="bestmodel" target="finaleval">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" value="held-out test data" style="endArrow=block;html=1;rounded=0;dashed=1;" edge="1" parent="1" source="test" target="finaleval">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
