@@ -1,0 +1,70 @@
+I need a limited optimizer-specific tuning follow-up for this IDS coursework project.
+
+Project root:
+C:\Users\kazHP\OneDrive - University of Nottingham Malaysia\Year2\Winter\Artificial_Intelligence_Methods\Course_Work
+
+Please read first:
+- report/optimizer_light_tuning_plan.md
+
+Goal:
+Run a small sensitivity study to check whether some methods underperformed because their optimizer-specific control parameters were left at practical default settings.
+
+Important scope rules:
+- This is NOT a full optimizer tuning study.
+- Keep the study lightweight.
+- Do NOT redesign the main paper around this.
+- Focus only on a few influential optimizer-specific parameters.
+
+Methods to tune:
+1. PSO
+2. SA
+3. Tabu Search
+
+Methods not to tune for now:
+- GA
+- VNS
+
+Phase 1: single-seed screening
+- budget: B=30
+- seed: 0
+- test only a small number of settings per method
+
+Suggested parameter priorities:
+
+PSO:
+- w
+- c1 / c2 balance
+
+SA:
+- T0
+- alpha
+
+Tabu Search:
+- tabu_tenure
+- neighborhood_size
+
+What I need from you:
+1. Inspect the current code/configs to find the current default optimizer-specific settings.
+2. Propose a very small candidate grid for each of PSO, SA, and Tabu Search.
+3. Run the lightweight screening experiments if the code/config structure supports it cleanly.
+4. Compare each tuned variant against the current fixed-setting version of the same method.
+5. Judge improvement using:
+   - F1
+   - FPR
+   - selected features
+   - runtime
+   Do not judge by raw F1 alone.
+6. If a tuned setting is clearly better for a method, identify it as the candidate for a second-step robustness check at B=30, seeds=0,1,2.
+7. If the setup is too messy or risky to run cleanly, stop and leave a precise note instead of forcing it.
+
+Output I need back:
+- which files/configs you inspected
+- the current default optimizer-specific settings for PSO, SA, and Tabu Search
+- the candidate grids you used
+- the results of the lightweight screen
+- whether any method clearly improved
+- which tuned setting, if any, deserves a small robustness follow-up
+- any risks or fairness concerns you found
+
+Please update files directly only if you create clear tuning result artifacts or summary notes.
+Do not rewrite the paper draft yet.
